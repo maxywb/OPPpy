@@ -1,0 +1,7 @@
+- count the number of incoming edges for each node. O(n+e)
+- put each node with 0 incoming edges in a set S. O(n)
+- while S has nodes:
+- take a node n from S.
+- delete n and update the number of incoming edges of the nodes connected to n. if any of those nodes now have 0 incoming edges, put them in S.
+- endwhile O(n+e)
+- if S is empty put there are still nodes left, you have cycle. 

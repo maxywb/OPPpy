@@ -1,0 +1,54 @@
+
+
+
+for key in keys:
+    f[key]=None
+    g[key]=None
+
+#vuilt items
+items = list()
+for fa in f: # or gb in g
+    item = FunctItem(fa,f)
+    items.add(item)
+## do similar for g
+
+root = FunctNode()
+for item in items:
+    # base case
+    if len(root.group) == 0:
+        root.group.add(item)
+        continue
+    
+    # we have to search for it's spot in the DAG
+    runner = root
+    stack = Stack() # so we do a depth first search
+    seen = set() # so we don't re-visit nodes in this pass
+    while True:
+        other = runner.anItem() # get an item from runner's group
+        # if item and other are equal they belong in the same group
+        if relations.areEqual(item.item,other):
+            runner.group.add(item)
+            break
+        # if item dominates other we must search up
+        elif relations.domniates(item,other):
+            # if runner's parent is null, item is the new parent
+            if not runner.parent:
+                runner = runner.parent
+                continue
+            # else the parent is the new runner
+            else:
+                runner.parent = item
+                item = root
+                break
+        # if other dominates item, keep going down
+        elif relations.dominates(other,item):
+            moreNodes = set.intersection(runner.children, seen) # don't revisit nodes
+            stack.pushAll(moreNodes)
+            runner = stack.pop() 
+            continue
+        # i don't know how we could get here, but just in case
+        else:
+            raise ParseError("wut: something happened making the DAG")
+
+
+

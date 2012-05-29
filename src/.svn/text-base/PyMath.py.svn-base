@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import Queue
+import re
+# my classes
+from Scanner import Scanner
+from Parser import Parser
+from GrammarParser import GrammarParser
+from Util import Stack
+# variables for options
+offset = 1
+ARG_COUNT = 3
+
+
+def parseOptions(args):
+    scannerDebug = False
+    parserDebug = False
+    grammarDebug=False
+    ctr = 0
+    offset = 1
+    while ctr <= ARG_COUNT and ctr < len(args):
+        if args[ctr] == "-ds":
+            scannerDebug = True
+            offset+=1
+        elif args[ctr] == "-dp":
+            parserDebug = True
+            offset+=1
+        elif args[ctr] == "-dg":
+            grammarDebug = True
+            offset+=1
+        ctr+=1
+
+    return scannerDebug,parserDebug,grammarDebug,offset
+# parseOptions
+
+def parsePhrase(args, offset): 
+    ctr = offset
+    phrase = ""
+    while ctr < len(args):
+        arg = args[ctr]
+        phrase += arg
+        ctr+=1
+    phrase += "$"
+
+    return phrase
+# parsePhrase
+
+def main(argv):
+    scannerDebug,parserDebug,grammarDebug,offset = parseOptions(argv)
+    phrase = parsePhrase(argv, offset)
+
+    gFile = "./testing/simple_grammar"
+    
+    # parse the grammer
+    g = GrammarParser(gFile, grammarDebug)
+    definition,relations = g.getDetails()
+    
+    
+
+    # scan
+    s = Scanner(offset,phrase,definition,scannerDebug)
+    s.scan()
+    ### TODO check for lexing errors before parsing
+
+    # parse
+    classes, lexemes, keyList, tokens = s.getParseInfo()
+    p = Parser(tokens,classes,lexemes,keyList,relations,parserDebug)
+    p.parse()
+    root = makeTree(p.orderedTokens)
+    print execute(root)
+# main
+
+def makeTree( orderedTokens):
+    
+    root = recurse(orderedTokens)
+
+    runner = root
+    stack = Stack()
+    while runner:
+        rep = runner.value
+        if runner.left:
+            rep+=" l: "+runner.left.value
+            stack.push(runner.left)
+        if runner.right:
+            rep+=" r: "+runner.right.value
+            stack.push(runner.right)
+        print rep
+        runner = stack.pop()
+    return root
+# makeTree
+
+def recurse(stack):
+    # make the node
+    node = TreeNode()
+    token = stack.pop()
+    node.type = token.type
+    node.value = token.value
+    
+    # if the node is a terminal, return
+    if type(token) == num:
+        return node
+        
+    else:
+        node.right = recurse(stack)
+        node.right.parent = node
+        node.left = recurse(stack)
+        node.left.parent = node
+
+    return node
+# recurse
+
+def execute(node):
+    
+    op = node.type
+
+    if op == "add":
+        return execute(node.left) + execute(node.right)
+    elif op == "mult":
+        return execute(node.left) * execute(node.right)
+    elif op == "div":
+        return execute(node.left) / execute(node.right)
+    elif op == "num":
+        print node.type,node.value
+        return int(node.value)
+    else:
+        print "wat",op
+        return None
+# execute
+
+
+class TreeNode(object):
+
+    def __init__(self):
+        self.parent = None
+        self.left = None
+        self.right = None
+        self.type = None
+        self.value = None
+    # __init__
+# TreeNode
+
+
+if __name__ == "__main__":
+    main(sys.argv)

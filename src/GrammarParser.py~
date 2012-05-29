@@ -1,0 +1,22 @@
+"""
+parses the file that contains the definition of the grammar
+"""
+
+
+class GrammerParser(object):
+    
+    gFile = None # the file that contains the definition of the grammar
+    debug = False
+
+    def __init__(self,gFile,debug=False):
+        self.gFile= gFile
+        self.debug=debug
+    # __init__
+
+    # returns the definiton of the tokens for the scanner and the relationships
+    # between the terminal symbols for the parser
+    def getDetails(self):
+        definition = ""
+        relations = ""
+        
+        return definition,relations

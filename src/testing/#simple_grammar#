@@ -1,0 +1,22 @@
+
+#
+# simple grammar to be parsed by the OPPPy parser
+#
+
+1: { mult , < , \* ; div , < , \/ }
+
+2: { add , < , \+ }
+
+3: { num , - , [0-9]+(\.[0-9]+)? } 
+
+# <hierarchy>: { <name> ; <associativity> ; <regex> }
+# associativity can be left (<), right (>) or neigher (-)
+
+
+# there are some reserved characters that are used by the parser 
+# , { } ; :
+
+
+
+#STRING_REP = "1:(* <); 2:(+ <)"
+

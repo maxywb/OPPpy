@@ -1,0 +1,54 @@
+"""****************************************************************************"""
+from Nodes import *
+from PrecFuncts import *
+from Util import *
+LEFT_ASSOC = "<"
+RIGHT_ASSOC = ">"
+NEITHER_ASSOC = "-"
+
+
+class Parser(object):
+    
+    def __init__(self,tokens,classes,lexemes,keyList,stringRep,debug=False):
+        self.debug = debug
+        if self.debug:  print "Parser"
+        self.tokens = tokens
+        self.classes = classes
+        self.lexemes = lexemes
+        self.keyList = keyList
+        self.relations = Relations(stringRep,self.debug)
+    # __init__
+
+    def parse(self):
+        self.orderedTokens = Stack()
+        stack = Stack()
+        start = EOF()
+        start.value = "$"
+        start.type = "EOF"
+        stack.push(start)
+        ip = 0
+
+        while True:
+            if type(stack.top()) == EOF and type(self.tokens[ip]) == EOF:
+                return
+            else:
+                a = stack.top()
+                b = self.tokens[ip]
+                
+                if self.relations.yieldsTo(a.type,b.type) \
+                        or self.relations.areEqual(a.type,b.type):
+                    stack.push(b)
+                    ip += 1
+
+                elif self.relations.dominate(a.type,b.type):
+                    next = stack.pop()
+                    if self.debug:print next.value
+                    self.orderedTokens.push(next)
+                    while self.relations.dominate(a.type,next.type) :
+                        next = stack.pop()
+                        if self.debug:print next.value
+                        self.orderedTokens.push(next)
+                else:
+                    raise ParseError("bad symbol")
+    # parse                
+# Parser
